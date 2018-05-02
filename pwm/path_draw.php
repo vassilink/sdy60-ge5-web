@@ -220,28 +220,26 @@ if (session_status() === PHP_SESSION_ACTIVE) {
                       <div id="map" style="height: 500px;"></div>
 					  <script>
 						L.mapbox.accessToken = 'pk.eyJ1IjoidmFzc2lsaXMxMCIsImEiOiJjamdpdWU0bzgwMzIzMzJwMnc1cG43eThlIn0.3KU68s781sAsckDflYw6AA';
-						var map = L.mapbox.map('map', 'mapbox.streets')
-							.setView([37.983810, 23.727539], 16);
 						
-							
-
+						var map = L.mapbox.map('map', 'mapbox.streets-satellite').setView([37.983810, 23.727539], 16);
+						
 						var featureGroup = L.featureGroup().addTo(map);
 						
-						// Create array of lat,lon points
-  var line_points = [
-      [38.893596444352134, -77.0381498336792],
-      [38.89337933372204, -77.03792452812195],
-      [38.89316222242831, -77.03761339187622],
-      [38.893028615148424, -77.03731298446655],
-      [38.892920059048464, -77.03691601753235],
-      [38.892903358095296, -77.03637957572937],
-      [38.89301191422077, -77.03592896461487],
-      [38.89316222242831, -77.03549981117249],
-      [38.89340438498248, -77.03514575958252],
-      [38.893596444352134, -77.0349633693695]
-  ];
+						// Create ToolBox
+						var line_points = [
+							[38.893596444352134, -77.0381498336792],
+							[38.89337933372204, -77.03792452812195],
+							[38.89316222242831, -77.03761339187622],
+							[38.893028615148424, -77.03731298446655],
+							[38.892920059048464, -77.03691601753235],
+							[38.892903358095296, -77.03637957572937],
+							[38.89301191422077, -77.03592896461487],
+							[38.89316222242831, -77.03549981117249],
+							[38.89340438498248, -77.03514575958252],
+							[38.893596444352134, -77.0349633693695]
+						];
 						
-						// Define polyline options
+						// ToolBox Color - Define polyline options
 						// http://leafletjs.com/reference.html#polyline
 						var polyline_options = {
 							color: '#000'
