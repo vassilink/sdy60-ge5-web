@@ -1,0 +1,158 @@
+
+
+body, html { overflow-x:hidden; }
+
+body {
+    background-color: #ffffff;
+    font-family: 'arial', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased; /* Fix for webkit rendering */
+    -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3, h4, h5, h6, span, p { font-family: 'arial', sans-serif; }
+
+
+.title{
+    text-align: center;
+    padding: 20px;
+    color: rgb(253,56,33);
+}
+
+.cont_text{
+    text-align: center;
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+
+#info_ , #map , #download, #game{
+    border-bottom: 1px #ccc solid;
+}
+
+#home{
+    background-color: #404040;
+}
+
+
+#logo{
+    width: 35%;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+#logo a{
+    text-decoration: none;
+    color: rgb(253,56,33);
+}
+
+#logo h1{
+    font-family: "Lucida Calligraphy";
+}
+
+
+#nav{
+    height: 100%;
+    display: inline-block;
+    text-align: right;
+    float: right;
+    margin: 0;
+    padding: 0;
+}
+
+#nav ul{
+    list-style-type: none;
+    overflow: hidden;
+}
+
+#nav ul li{
+    display: inline-block;
+}
+
+#nav ul li a{
+    font-size: 16px;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    padding: 14px 16px;
+    color: #ffffff;
+}
+
+#nav ul li a:hover{
+    color: rgb(253,56,33);
+    box-shadow: 0px 1px 1px #333333;
+}
+
+
+#map-canvas {
+    height: 800px;
+    width: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-bottom: 10px;
+}
+
+#footer_ {
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #383838;
+}
+
+.onoffswitch {
+    position: relative;
+    margin-bottom: 1%;
+    margin-right: 1%;
+    /*padding-left: 90%;*/
+    width: 130px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #999999; border-radius: 20px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
+    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "Pedestrians";
+    padding-left: 10px;
+    background-color: #34A7C1;
+    color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+    content: "Cyclists";
+    padding-right: 10px;
+    background-color: rgb(253,56,33);
+    color: #FFFFFF;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block; width: 18px; margin: 6px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 96px;
+    border: 2px solid #999999; border-radius: 20px;
+    transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px;
+}
+

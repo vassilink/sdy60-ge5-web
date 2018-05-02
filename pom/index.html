@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+
+<!-- webpage info -->
+    <meta charset="UTF-8">
+	<meta name="author" content="Papapolyzos Antonis" />
+	<meta name="description" content=" The PeersOnMap is an Android application, that based on users contribution with a purpose of creating a map more friendly to pedestrians and cyclists. Users are motivated through gamification to upload paths during walking or bicycling. Peer Reviewing is a base concept on PeersOnMap application and help to improve the produced map, through physical present of users in order to correct recorded paths." />
+    <meta name="keywords" content="Mapmaking, Paths, Pedestrian, Cyclist, Cartography, Crowdsourcing, Gamification, Citizen Science, Geographic Map, Peer Review">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PeersOnMap</title>
+    <style>
+        a[href^="http://maps.google.com/maps"]{display:none !important}
+        a[href^="https://maps.google.com/maps"]{display:none !important}
+        a[href^="https://www.google.com/maps"]{display:none !important}
+    </style>
+
+    <link rel="shortcut icon" href="favicon.ico">
+	<link rel="stylesheet" href="style.css" type="text/css" />
+    <script src="./js/jquery-3.2.0.min.js" type="text/javascript" ></script>
+
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyAQLZeQXnBL5AU93X4L8KeLQfqEVDzKy9A"></script>
+    <script type="text/javascript">
+        var map;
+
+        var pedestrianLayer = new google.maps.KmlLayer({
+            url: 'https://webeasy.gr/projects/eap/sdy60/ge5/pom/pedestrianKmls/PathsOnMap.kmz',
+            preserveViewport: true
+        });
+        var cycleLayer = new google.maps.KmlLayer({
+            url: 'https://webeasy.gr/projects/eap/sdy60/ge5/pom/cycleKmls/CyclePathsOnMap.kmz',
+            preserveViewport: true
+        });
+        var styledMapTypeWithRoads = new google.maps.StyledMapType(
+                [
+                    {
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#ebe3cd"
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#523735"
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                            {
+                                "color": "#f5f1e6"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#c9b2a6"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#dcd2be"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "labels",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#ae9e90"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "landscape.natural",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "labels.text",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#93817c"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.business",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "geometry.fill",
+                        "stylers": [
+                            {
+                                "color": "#a5b076"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "labels.text",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#447530"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#f5f1e6"
+                            },
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "labels.icon",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.arterial",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.arterial",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#e9bc62"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway.controlled_access",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway.controlled_access",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#db8555"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.local",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.local",
+                        "elementType": "labels",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.local",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#806b63"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "elementType": "labels.icon",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.line",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.line",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#8f7d77"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.line",
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                            {
+                                "color": "#ebe3cd"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.station",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "geometry.fill",
+                        "stylers": [
+                            {
+                                "color": "#b9d3c2"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#92998d"
+                            }
+                        ]
+                    }
+                ],
+                {name: 'PoM-Roads On'});
+
+        var styledMapTypeNoRoads = new google.maps.StyledMapType(
+                [
+                    {
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#ebe3cd"
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#523735"
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                            {
+                                "color": "#f5f1e6"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#c9b2a6"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#dcd2be"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "labels",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.land_parcel",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#ae9e90"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "landscape.natural",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "labels.text",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#93817c"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.business",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "geometry.fill",
+                        "stylers": [
+                            {
+                                "color": "#a5b076"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "labels.text",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#447530"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "labels.icon",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#e9bc62"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway.controlled_access",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            },
+                            {
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway.controlled_access",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#db8555"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.local",
+                        "elementType": "labels",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.local",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#806b63"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "elementType": "labels.icon",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.line",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.line",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#8f7d77"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.line",
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                            {
+                                "color": "#ebe3cd"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit.station",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dfd2ae"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "geometry.fill",
+                        "stylers": [
+                            {
+                                "color": "#b9d3c2"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#92998d"
+                            }
+                        ]
+                    }
+                ],
+                {name: 'PoM-Roads Off'});
+
+        function initialize() {
+
+            var center_location = new google.maps.LatLng(37.975525, 23.734904); //athens
+
+            var mapOptions = {
+                zoom: 16,
+                center: center_location,
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    mapTypeIds: ['roadmap', 'satellite', 'styled_map_no_roads', 'styled_map_roads'],
+                    position: google.maps.ControlPosition.TOP_LEFT,
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                },
+                zoomControl: true,
+                scaleControl: true,
+                streetViewControl: false
+            };
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+            //Associate the styled map with the MapTypeId and set it to display.
+            map.mapTypes.set('styled_map_roads', styledMapTypeWithRoads);
+            map.mapTypes.set('styled_map_no_roads', styledMapTypeNoRoads);
+            map.setMapTypeId('styled_map_no_roads');
+
+            pedestrianLayer.setMap(map);
+/*
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var geolocate = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                    map.setCenter(geolocate);
+                });
+            }
+*/
+        }
+
+        function changeMode(state){
+            if(state){
+                cycleLayer.setMap(null);
+                pedestrianLayer.setMap(map);
+            }else{
+                pedestrianLayer.setMap(null);
+                cycleLayer.setMap(map);
+            }
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+
+</head>
+<body>
+
+<!-- webpage content goes here in the body -->
+
+<!-- Header -->
+    <header id="home">
+        <div class="container">
+            <div id="logo">
+                <h1><a href="#home">PeersOnMap</a></h1>
+            </div>
+
+            <div id="nav">
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#map">Map</a></li>
+                    <li><a href="#download">Android App</a></li>
+                    <li><a href="#game">Gamification</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+<!-- Info About PeersOnMap -->
+    <div id="info_">
+        <div class="title">
+            <h2>Peers On Map</h2>
+        </div>
+        <div class="cont_text">
+            <p>
+                The <b>PeersOnMap</b> is an Android application, that based on users contribution with a purpose of creating a map more friendly to pedestrians and cyclists.
+                Users are motivated through <i>gamification</i> to upload paths during walking or bicycling.
+                <i>Peer Reviewing</i> is a base concept on PeersOnMap application and help to improve the produced map, through physical present of users in order to correct recorded paths.
+            </p>
+        </div>
+    </div>
+
+<!-- Map -->
+    <div id="map">
+        <div class="title">
+            <h2>Map</h2>
+        </div>
+        <div style="width: 98%;">
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+                <label class="onoffswitch-label" for="myonoffswitch">
+                    <span class="onoffswitch-inner"></span>
+                    <span class="onoffswitch-switch"></span>
+                </label>
+            </div>
+            <script>
+                $("#myonoffswitch").change(function(){
+                    if($(this).is(':checked')) {
+                        changeMode(true);
+                    }else{
+                        changeMode(false);
+                    }
+                });
+            </script>
+        </div>
+        <div id="map-canvas">
+        </div>
+    </div>
+
+<!-- Download App -->
+    <div id="download">
+        <div class="title">
+            <h2>Android App</h2>
+        </div>
+        <div class="cont_text">
+            <p>
+                You can download the application from the image below until it is uploaded in Google Play Store.
+                </br>
+                Minimum Supported Version: Android Jelly Bean (API 16)
+            </p>
+            <!--a href="application/PoM.apk" download><img src="images/PoMdownloadImage.png"/></a-->
+			<a href="application/app-debug.apk" download><img src="images/PoMdownloadImage.png"/></a>
+            <p>
+            <h4>Instructions to install PeersOnMap</h4>
+            <ul style="text-align: left;">
+                <li>Enable ''Unknown Sources'' from Settings > Security menu.</li>
+                <li>Download the APK from the above image.</li>
+                <li>You may get a message warning that 'this type of file can harm your device.' Ignore it (trust us) and tap OK.</li>
+                <li>Open the APK (you can tap the completed download in your notifications menu), read the permissions that the PeersOnMap requests, then tap Install.</li>
+            </ul>
+            </p>
+        </div>
+    </div>
+
+<!-- Gamification -->
+    <div id="game">
+        <div class="title">
+            <h2>Gamification</h2>
+        </div>
+        <div class="cont_text">
+            <p>
+                PoM Google Play Game basic points system
+            </p>
+            <img src="images/gamification.png"/>
+        </div>
+    </div>
+
+<!-- Footer -->
+    <footer id="footer_">
+        Copyright © 2017 <strong>All rights reserved. Developed by <a href="">Papapolyzos Antonis</a>.</strong>
+    </footer>
+
+</body>
+</html>
