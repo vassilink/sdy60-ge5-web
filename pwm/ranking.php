@@ -49,6 +49,20 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 	header('Location: https://webeasy.gr/projects/eap/sdy60/ge5/pwm/login.php') OR exit('Cannot redirect');
 	exit();
 }
+
+/*
+* GET: Page Data 
+*******************************************************************************/
+$sql_list = 
+	'SELECT uid, email, '.
+	'ROUND((pts_paths / 10)) AS paths_total, '.
+	'pts_meters, '.
+	'ROUND((pts_reviews / 10)) AS reviews_total, '.
+	'(pts_paths + pts_10_paths + pts_rated_path + pts_1000_meters + pts_5000_meters + pts_reviews + pts_10_reviews) AS pts_total '.
+	'FROM v_points_2 '.
+	'ORDER BY pts_total desc';
+$req_list = mysqli_query($db, $sql_list) or exit('Cannot request Players Points List');
+$cnt_list = mysqli_affected_rows($db);
 ?>
 
 <!DOCTYPE html>
@@ -99,7 +113,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
             <!-- menu profile quick info -->
             <div class="profile clearfix">
               <div class="profile_pic">
-                <img src="images/0.jpg" alt="..." class="img-circle profile_img">
+				<img src="images/0.jpg" alt="..." class="img-circle profile_img">
               </div>
               <div class="profile_info">
 				<h2><?= $player[0]; ?></h2>
@@ -182,7 +196,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>Σχεδίαση μονοπατιού</h3>
+                <h3>Κατάταξη παικτών</h3>
               </div>
 
               <div class="title_right">
@@ -198,19 +212,78 @@ if (session_status() === PHP_SESSION_ACTIVE) {
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2>Σχεδίασε το μονοπάτι πάνω στον χάρτη με τη χρήση του ποντικιού</h2>
+                    <h2>Κατάταξη με βάση τους κερδισμένους πόντους</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li id="distance_display">&nbsp;</li>
                     </ul>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
-					<div id="map" style="height: 500px;"></div>
+					<!-- Ranking -->
+                    <table class="table table-striped projects">
+                      <thead>
+                        <tr>
+                          <th style="width: 5%">α/α</th>
+                          <th style="width: 20%">Παίκτης</th>
+                          <th><i class="fa fa-map-o"></i> Μονοπάτια</th>
+                          <th><i class="fa fa-arrows-h"></i> Μέτρα</th>
+                          <th><i class="fa fa-star-half-o"></i> Αξιολογήσεις</th>
+                          <th style="width: 20%"><i class="fa fa-calculator"></i> Πόντοι</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+						<?php $aa = 1; ?>
+						<?php while ($cnt_list > 0 && $ftc_list = mysqli_fetch_array($req_list)) { ?>
+							<?php $ranked_player = explode('@', $ftc_list['email']); ?>
+							<tr>
+								<td><?= $aa; ?></td>
+								<td><?= $ranked_player[0]; ?></td>
+								<td><?= $ftc_list['paths_total']; ?></td>
+								<td><?= $ftc_list['pts_meters']; ?></td>
+								<td><?= $ftc_list['reviews_total']; ?></td>
+								<td><?= $ftc_list['pts_total']; ?></td>
+							</tr>
+							<?php $aa++; ?>
+						<?php } // endwhile ?>
+					</tbody>
+                   </table>
+                   <!-- /Ranking -->
 				  </div>
+				  
 				  <div class="x_content">
-                    <a href="#" id="save"><button id="save_button" type="button" class="btn btn-primary" disabled>Αποθήκευση Μονοπατιού</button></a>
+					<div class="row">
+						&nbsp;
+					</div>
 				  </div>
-                </div>
+				  
+				  <div class="x_content">
+					<!-- Ranking Rules -->
+					<div class="x_panel tile">
+						<div class="x_title">
+							<h4>Κριτήρια απόδοσης πόντων</h4>
+							<div class="clearfix"></div>
+						</div>
+						<div class="x_content">
+							<div class="dashboard-widget-content">
+								<ul class="quick-list">
+									<li><i class="fa fa-map-o"></i> Σχεδίαση ενός (1) μονοπατιού: <span class="badge bg-green">10</span></li>
+									<li><i class="fa fa-map-o"></i> Σχεδίαση δέκα (10) μονοπατιών: <span class="badge bg-green">100</span></li>
+									<li><i class="fa fa-arrows-h"></i> Κάθε ένα (1) μέτρο σχεδιασμένου μονοπατιού: <span class="badge bg-green">1</span></li>
+									<li><i class="fa fa-arrows-h"></i> Κάθε χίλια (1000) μέτρα σχεδιασμένου μονοπατιού: <span class="badge bg-green">100</span></li>
+									<li><i class="fa fa-arrows-h"></i> Κάθε πέντε χιλιάδες (5000) μέτρα σχεδιασμένου μονοπατιού: <span class="badge bg-green">500</span></li>
+									<li><i class="fa fa-star-half-o"></i> Αξιολόγηση ενός (1) μονοπατιού: <span class="badge bg-green">10</span></li>
+									<li><i class="fa fa-star-half-o"></i> Αξιολόγηση δέκα (10) μονοπατιών: <span class="badge bg-green">100</span></li>
+									<li><i class="fa fa-thumbs-down"></i> Μείωση πόντων μονοπατιού με αξιολόγηση 1 αστεριού: <span class="badge bg-red">-20%</span></li>
+									<li><i class="fa fa-thumbs-down"></i> Μείωση πόντων μονοπατιού με αξιολόγηση 2 αστεριών: <span class="badge bg-red">-10%</span></li>
+									<li><i class="fa fa-thumbs-up"></i> Αύξηση πόντων μονοπατιού με αξιολόγηση 4 αστεριών: <span class="badge bg-green">+10%</span></li>
+									<li><i class="fa fa-thumbs-up"></i> Αύξηση πόντων μονοπατιού με αξιολόγηση 5 αστεριών: <span class="badge bg-green">+20%</span></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<!-- /Ranking Rules -->
+				  </div>
+				</div>
               </div>
             </div>
           </div>
@@ -239,110 +312,5 @@ if (session_status() === PHP_SESSION_ACTIVE) {
     
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.min.js"></script>
-	
-	<script>
-		// Library API Token
-		L.mapbox.accessToken = 'pk.eyJ1IjoidmFzc2lsaXMxMCIsImEiOiJjamdpdWU0bzgwMzIzMzJwMnc1cG43eThlIn0.3KU68s781sAsckDflYw6AA';
-		
-		// Show Initial Map
-		var map = L.mapbox.map('map', 'mapbox.streets-satellite').setView([37.983810, 23.727539], 16);
-		
-		// Setup Player Path as a Feature of the Map
-		var playerPath = L.featureGroup().addTo(map);
-		
-		// Setup Draw Controls as a Feature of the Map
-		var drawControl = new L.Control.Draw({
-			draw: {
-				polygon: false,
-				rectangle: false,
-				circle: false,
-				marker: false
-			},
-			edit: {
-				featureGroup: playerPath, 
-				edit: false
-			}
-		}).addTo(map);
-		
-		// Setup Draw Controls when a Player Path is Drawn
-		var drawControlEditOnly = new L.Control.Draw({
-			edit: {
-				featureGroup: playerPath, 
-				edit: false
-			},
-			draw: false
-		});
-		
-		// Setup Polyline Options
-		drawControl.setDrawingOptions({
-			polyline: {
-				shapeOptions: {
-					color: '#8b4513'
-				}
-			}
-		});
-		
-		// Calculate the Distance of the polyline
-			var tempLatLng = null;
-			var totalDistance = 0.00000;
-		
-		// Actions on Creation of the Draw
-		map.on('draw:created', function(e) {
-			playerPath.addLayer(e.layer);
-			
-			$.each(e.layer._latlngs, function(i, latlng) {
-				if (tempLatLng == null) {
-					tempLatLng = latlng;
-					return;
-				}
-				
-				totalDistance += tempLatLng.distanceTo(latlng);
-				tempLatLng     = latlng;
-			});
-			
-			drawControl.remove(map);
-			drawControlEditOnly.addTo(map);
-			document.getElementById('distance_display').innerHTML = '<strong>Η συνολική απόσταση είναι: ' + Math.round(totalDistance) + ' μέτρα</strong>';
-			document.getElementById('save_button').disabled = false;
-		});
-		
-		// Actions on Deletion of the Draw
-		map.on('draw:deleted', function(e) {
-			if (playerPath.getLayers().length === 0) {
-				drawControlEditOnly.remove(map);
-				drawControl.addTo(map);
-				document.getElementById('distance_display').innerHTML = '&nbsp;';
-				document.getElementById('save_button').disabled = true;
-			};
-		});
-		
-		// Save Path
-		//L.GeoJSON.coordsToLatLng()
-		document.getElementById('save').onclick = function(e) {
-			// Extract GeoJSON from featureGroup
-			var data = playerPath.toGeoJSON();
-			
-			// Stringify the GeoJSON
-			//var stringifiedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
-			var stringifiedData = JSON.stringify(data);
-			
-			// Create export
-			//document.getElementById('save').setAttribute('href', 'data:' + stringifiedData);
-			//document.getElementById('save').setAttribute('download','data.geojson');
-			
-			// Insert Data to DB
-			var jax = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
-			
-			jax.open('POST','process.php');
-			jax.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-			jax.send('command=save&player=<?= $user; ?>&meters=' + Math.round(totalDistance) + '&mapdata=' + stringifiedData)
-			jax.onreadystatechange = function() {
-				if (jax.readyState == 4) {
-					if (jax.responseText.indexOf('bien') + 1) alert('Αποθηκεύτηκε');
-					else alert(jax.responseText)
-				}
-			}
-		}
-	</script>
   </body>
 </html>

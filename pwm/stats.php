@@ -49,6 +49,33 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 	header('Location: https://webeasy.gr/projects/eap/sdy60/ge5/pwm/login.php') OR exit('Cannot redirect');
 	exit();
 }
+
+/*
+* GET: Page Data 
+*******************************************************************************/
+$sql_data = 
+	'SELECT uid, email, '.
+	'ROUND((pts_paths / 10)) AS paths_total, '.
+	'pts_meters, pts_1000_meters, pts_5000_meters, '.
+	'ROUND((pts_reviews / 10)) AS reviews_total, '.
+	'(pts_paths + pts_10_paths + pts_rated_path + pts_1000_meters + pts_5000_meters + pts_reviews + pts_10_reviews) AS pts_total '.
+	'FROM v_points_2 '.
+	'WHERE uid = '.$ftc_player['uid'];
+$req_data = mysqli_query($db, $sql_data) or exit('Cannot request Player Achievements Data');
+$cnt_data = mysqli_affected_rows($db);
+$ftc_data = mysqli_fetch_array($req_data);
+
+$data['mob_paths'] = mysqli_fetch_row(mysqli_query($db, 'SELECT COUNT(1) FROM paths WHERE player_id NOT IN (20, 21, 24) AND meters > 0'))[0];
+$data['web_paths'] = mysqli_fetch_row(mysqli_query($db, 'SELECT COUNT(1) FROM web_paths WHERE player_id NOT IN (20, 21, 24) AND meters > 0'))[0];
+
+$data['mob_kms'] = mysqli_fetch_row(mysqli_query($db, 'SELECT ROUND(SUM(meters) / 1000, 3) FROM paths WHERE player_id NOT IN (20, 21, 24) AND meters > 0'))[0];
+$data['web_kms'] = mysqli_fetch_row(mysqli_query($db, 'SELECT ROUND(SUM(meters) / 1000, 3) FROM web_paths WHERE player_id NOT IN (20, 21, 24) AND meters > 0'))[0];
+
+$data['mob_reviews'] = mysqli_fetch_row(mysqli_query($db, 'SELECT COUNT(1) FROM reviews WHERE player_id NOT IN (20, 21, 24)'))[0];
+$data['web_reviews'] = mysqli_fetch_row(mysqli_query($db, 'SELECT COUNT(1) FROM web_reviews WHERE player_id NOT IN (20, 21, 24)'))[0];
+
+$data['mob_stars'] = mysqli_fetch_row(mysqli_query($db, 'SELECT ROUND(AVG(rated), 2) FROM reviews WHERE player_id NOT IN (20, 21, 24)'))[0];
+$data['web_stars'] = mysqli_fetch_row(mysqli_query($db, 'SELECT ROUND(AVG(rated), 2) FROM web_reviews WHERE player_id NOT IN (20, 21, 24)'))[0];
 ?>
 
 <!DOCTYPE html>
@@ -68,6 +95,8 @@ if (session_status() === PHP_SESSION_ACTIVE) {
     <link href="../vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <!-- NProgress -->
     <link href="../vendors/nprogress/nprogress.css" rel="stylesheet">
+	<!-- bootstrap-progressbar -->
+    <link href="../vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
 	
 	<!-- Mapbox -->
 	<!--script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>
@@ -99,7 +128,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
             <!-- menu profile quick info -->
             <div class="profile clearfix">
               <div class="profile_pic">
-                <img src="images/0.jpg" alt="..." class="img-circle profile_img">
+				<img src="images/0.jpg" alt="..." class="img-circle profile_img">
               </div>
               <div class="profile_info">
 				<h2><?= $player[0]; ?></h2>
@@ -178,11 +207,11 @@ if (session_status() === PHP_SESSION_ACTIVE) {
         <!-- /top navigation -->
 
         <!-- page content -->
-        <div class="right_col" role="main">
+		<div class="right_col" role="main">
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>Σχεδίαση μονοπατιού</h3>
+                <h3>Στατιστικά</h3>
               </div>
 
               <div class="title_right">
@@ -198,19 +227,36 @@ if (session_status() === PHP_SESSION_ACTIVE) {
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2>Σχεδίασε το μονοπάτι πάνω στον χάρτη με τη χρήση του ποντικιού</h2>
+                    <h2>Συγκριτικά στατιστικά mobile και web εφαρμογής</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li id="distance_display">&nbsp;</li>
                     </ul>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
-					<div id="map" style="height: 500px;"></div>
-				  </div>
-				  <div class="x_content">
-                    <a href="#" id="save"><button id="save_button" type="button" class="btn btn-primary" disabled>Αποθήκευση Μονοπατιού</button></a>
-				  </div>
-                </div>
+					<!-- Stats -->
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<div class="x_panel">
+							<div class="x_title">
+								<h2>Στατιστικά χαρτογράφησης</h2>
+								<div class="clearfix"></div>
+							</div>
+							<div class="x_content">
+								<canvas id="appBarChart"></canvas>
+							</div>
+						</div>
+					</div>
+					<!-- /Stats -->
+				</div>
+				
+				<div class="x_content">
+					<div class="row">
+						&nbsp;
+					</div>
+				</div>
+				
+				
+				</div>
               </div>
             </div>
           </div>
@@ -235,113 +281,46 @@ if (session_status() === PHP_SESSION_ACTIVE) {
     <!-- FastClick -->
     <script src="../vendors/fastclick/lib/fastclick.js"></script>
     <!-- NProgress -->
-    <script src="../vendors/nprogress/nprogress.js"></script>
-    
+    <script src="../vendors/nprogress/nprogress.js"></script>    
+    <!-- Chart.js -->
+    <script src="../vendors/Chart.js/dist/Chart.min.js"></script>
+    <!-- jQuery Sparklines -->
+    <script src="../vendors/jquery-sparkline/dist/jquery.sparkline.min.js"></script>
+    <!-- easy-pie-chart -->
+    <script src="../vendors/jquery.easy-pie-chart/dist/jquery.easypiechart.min.js"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="../vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.min.js"></script>
-	
 	<script>
-		// Library API Token
-		L.mapbox.accessToken = 'pk.eyJ1IjoidmFzc2lsaXMxMCIsImEiOiJjamdpdWU0bzgwMzIzMzJwMnc1cG43eThlIn0.3KU68s781sAsckDflYw6AA';
-		
-		// Show Initial Map
-		var map = L.mapbox.map('map', 'mapbox.streets-satellite').setView([37.983810, 23.727539], 16);
-		
-		// Setup Player Path as a Feature of the Map
-		var playerPath = L.featureGroup().addTo(map);
-		
-		// Setup Draw Controls as a Feature of the Map
-		var drawControl = new L.Control.Draw({
-			draw: {
-				polygon: false,
-				rectangle: false,
-				circle: false,
-				marker: false
-			},
-			edit: {
-				featureGroup: playerPath, 
-				edit: false
-			}
-		}).addTo(map);
-		
-		// Setup Draw Controls when a Player Path is Drawn
-		var drawControlEditOnly = new L.Control.Draw({
-			edit: {
-				featureGroup: playerPath, 
-				edit: false
-			},
-			draw: false
-		});
-		
-		// Setup Polyline Options
-		drawControl.setDrawingOptions({
-			polyline: {
-				shapeOptions: {
-					color: '#8b4513'
-				}
-			}
-		});
-		
-		// Calculate the Distance of the polyline
-			var tempLatLng = null;
-			var totalDistance = 0.00000;
-		
-		// Actions on Creation of the Draw
-		map.on('draw:created', function(e) {
-			playerPath.addLayer(e.layer);
+		if ($('#appBarChart').length ) {
+			var ctx = document.getElementById("appBarChart");
 			
-			$.each(e.layer._latlngs, function(i, latlng) {
-				if (tempLatLng == null) {
-					tempLatLng = latlng;
-					return;
+			var appBarChart = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: ["Μονοπάτια", "Χιλιόμετρα", "Αξιολογήσεις", "Μ.Ο. Βαθμών"],
+					datasets: [{
+						label: 'mobile ',
+						backgroundColor: "#26B99A",
+						data: [<?= $data['mob_paths']; ?>, <?= $data['mob_kms']; ?>, <?= $data['mob_reviews']; ?>, <?= $data['mob_stars']; ?>]
+					}, {
+						label: 'web ',
+						backgroundColor: "#03586A",
+						data: [<?= $data['web_paths']; ?>, <?= $data['web_kms']; ?>, <?= $data['web_reviews']; ?>, <?= $data['web_stars']; ?>]
+					}]
+				},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: true
+							}
+						}]
+					}
 				}
-				
-				totalDistance += tempLatLng.distanceTo(latlng);
-				tempLatLng     = latlng;
 			});
-			
-			drawControl.remove(map);
-			drawControlEditOnly.addTo(map);
-			document.getElementById('distance_display').innerHTML = '<strong>Η συνολική απόσταση είναι: ' + Math.round(totalDistance) + ' μέτρα</strong>';
-			document.getElementById('save_button').disabled = false;
-		});
-		
-		// Actions on Deletion of the Draw
-		map.on('draw:deleted', function(e) {
-			if (playerPath.getLayers().length === 0) {
-				drawControlEditOnly.remove(map);
-				drawControl.addTo(map);
-				document.getElementById('distance_display').innerHTML = '&nbsp;';
-				document.getElementById('save_button').disabled = true;
-			};
-		});
-		
-		// Save Path
-		//L.GeoJSON.coordsToLatLng()
-		document.getElementById('save').onclick = function(e) {
-			// Extract GeoJSON from featureGroup
-			var data = playerPath.toGeoJSON();
-			
-			// Stringify the GeoJSON
-			//var stringifiedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
-			var stringifiedData = JSON.stringify(data);
-			
-			// Create export
-			//document.getElementById('save').setAttribute('href', 'data:' + stringifiedData);
-			//document.getElementById('save').setAttribute('download','data.geojson');
-			
-			// Insert Data to DB
-			var jax = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
-			
-			jax.open('POST','process.php');
-			jax.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-			jax.send('command=save&player=<?= $user; ?>&meters=' + Math.round(totalDistance) + '&mapdata=' + stringifiedData)
-			jax.onreadystatechange = function() {
-				if (jax.readyState == 4) {
-					if (jax.responseText.indexOf('bien') + 1) alert('Αποθηκεύτηκε');
-					else alert(jax.responseText)
-				}
-			}
 		}
 	</script>
   </body>

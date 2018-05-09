@@ -93,7 +93,7 @@ if (isset($_POST['login']) && $_POST['login'] === 'Login') {
     <link href="../vendors/animate.css/animate.min.css" rel="stylesheet">
 
     <!-- Custom Theme Style -->
-    <link href="../build/css/custom.min.css" rel="stylesheet">
+    <link href="../build/css/custom.css" rel="stylesheet">
   </head>
 
   <body class="login">
@@ -114,6 +114,12 @@ if (isset($_POST['login']) && $_POST['login'] === 'Login') {
               </div>
 
               <div class="clearfix"></div>
+			  
+			  <div class="separator">
+                <p class="change_link">*Χρησιμοποίησε το email με το οποίο έκανες login στην κινητή εφαρμογή</p>
+
+                <div class="clearfix"></div>
+              </div>
 
               
             </form>
